@@ -4,15 +4,19 @@ import { NoteList } from "../components/NoteList";
 import { NoteEditor } from "../components/NoteEditor";
 import { getNotes, saveNote, deleteNote } from "../services/noteService";
 import { useToast } from "@/components/ui/use-toast";
+import { PasswordPrompt } from "../components/PasswordPrompt";
 
 const Index = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    setNotes(getNotes());
-  }, []);
+    if (isAuthenticated) {
+      setNotes(getNotes());
+    }
+  }, [isAuthenticated]);
 
   const handleNewNote = () => {
     const newNote: Note = {
@@ -47,6 +51,10 @@ const Index = () => {
     }
     setSelectedNote(null);
   };
+
+  if (!isAuthenticated) {
+    return <PasswordPrompt onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
 
   return (
     <div className="min-h-screen p-8">
