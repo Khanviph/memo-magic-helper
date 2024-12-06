@@ -16,3 +16,11 @@ export const verifyPassword = (input: string): boolean => {
 export const isPasswordSet = (): boolean => {
   return !!getPassword();
 };
+
+export const changePassword = (oldPassword: string, newPassword: string): boolean => {
+  if (verifyPassword(oldPassword)) {
+    setPassword(newPassword);
+    return true;
+  }
+  return false;
+};

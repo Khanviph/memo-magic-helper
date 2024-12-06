@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { setPassword, verifyPassword, isPasswordSet } from "../services/authService";
+import { setPassword, verifyPassword, isPasswordSet, changePassword } from "../services/authService";
 
 interface PasswordPromptProps {
   onAuthenticated: () => void;
@@ -11,7 +11,9 @@ interface PasswordPromptProps {
 
 export const PasswordPrompt = ({ onAuthenticated }: PasswordPromptProps) => {
   const [password, setPasswordInput] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [isSettingPassword, setIsSettingPassword] = useState(!isPasswordSet());
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -30,6 +32,26 @@ export const PasswordPrompt = ({ onAuthenticated }: PasswordPromptProps) => {
         description: "密码设置成功",
       });
       onAuthenticated();
+    } else if (isChangingPassword) {
+      if (newPassword.length < 4) {
+        toast({
+          description: "新密码长度至少需要4位",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (changePassword(password, newPassword)) {
+        toast({
+          description: "密码修改成功",
+        });
+        setIsChangingPassword(false);
+        onAuthenticated();
+      } else {
+        toast({
+          description: "当前密码错误",
+          variant: "destructive",
+        });
+      }
     } else {
       if (verifyPassword(password)) {
         onAuthenticated();
@@ -46,19 +68,59 @@ export const PasswordPrompt = ({ onAuthenticated }: PasswordPromptProps) => {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-6 space-y-6">
         <h2 className="text-2xl font-bold text-center">
-          {isSettingPassword ? "设置访问密码" : "请输入访问密码"}
+          {isSettingPassword 
+            ? "设置访问密码" 
+            : isChangingPassword 
+              ? "修改访问密码" 
+              : "请输入访问密码"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             type="password"
             value={password}
             onChange={(e) => setPasswordInput(e.target.value)}
-            placeholder={isSettingPassword ? "请设置密码" : "请输入密码"}
+            placeholder={isSettingPassword ? "请设置密码" : "请输入当前密码"}
             className="w-full"
           />
+          {isChangingPassword && (
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="请输入新密码"
+              className="w-full"
+            />
+          )}
           <Button type="submit" className="w-full">
-            {isSettingPassword ? "设置密码" : "验证密码"}
+            {isSettingPassword 
+              ? "设置密码" 
+              : isChangingPassword 
+                ? "修改密码" 
+                : "验证密码"}
           </Button>
+          {!isSettingPassword && !isChangingPassword && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => setIsChangingPassword(true)}
+            >
+              修改密码
+            </Button>
+          )}
+          {isChangingPassword && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                setIsChangingPassword(false);
+                setNewPassword("");
+              }}
+            >
+              取消
+            </Button>
+          )}
         </form>
       </Card>
     </div>
