@@ -14,9 +14,14 @@ const Index = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      setNotes(getNotes());
+      loadNotes();
     }
   }, [isAuthenticated]);
+
+  const loadNotes = async () => {
+    const fetchedNotes = await getNotes();
+    setNotes(fetchedNotes);
+  };
 
   const handleNewNote = () => {
     const newNote: Note = {
@@ -29,22 +34,22 @@ const Index = () => {
     setSelectedNote(newNote);
   };
 
-  const handleNoteChange = (updatedNote: Note) => {
-    saveNote(updatedNote);
-    setNotes(getNotes());
+  const handleNoteChange = async (updatedNote: Note) => {
+    await saveNote(updatedNote);
+    await loadNotes();
     setSelectedNote(updatedNote);
   };
 
-  const handleNoteDelete = (id: string) => {
-    deleteNote(id);
-    setNotes(getNotes());
+  const handleNoteDelete = async (id: string) => {
+    await deleteNote(id);
+    await loadNotes();
     setSelectedNote(null);
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
     if (selectedNote) {
-      saveNote(selectedNote);
-      setNotes(getNotes());
+      await saveNote(selectedNote);
+      await loadNotes();
       toast({
         description: "笔记已保存",
       });

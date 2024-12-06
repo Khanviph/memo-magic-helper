@@ -1,26 +1,38 @@
 import { Note } from "../types/note";
 
-const STORAGE_KEY = "notes";
+const API_URL = "http://localhost:3000/api";
 
-export const getNotes = (): Note[] => {
-  const notes = localStorage.getItem(STORAGE_KEY);
-  return notes ? JSON.parse(notes) : [];
-};
-
-export const saveNote = (note: Note): void => {
-  const notes = getNotes();
-  const existingNoteIndex = notes.findIndex((n) => n.id === note.id);
-  
-  if (existingNoteIndex >= 0) {
-    notes[existingNoteIndex] = note;
-  } else {
-    notes.push(note);
+export const getNotes = async (): Promise<Note[]> => {
+  try {
+    const response = await fetch(`${API_URL}/notes`);
+    const notes = await response.json();
+    return notes;
+  } catch (error) {
+    console.error("获取笔记失败:", error);
+    return [];
   }
-  
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
 };
 
-export const deleteNote = (id: string): void => {
-  const notes = getNotes().filter((note) => note.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+export const saveNote = async (note: Note): Promise<void> => {
+  try {
+    await fetch(`${API_URL}/notes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(note),
+    });
+  } catch (error) {
+    console.error("保存笔记失败:", error);
+  }
+};
+
+export const deleteNote = async (id: string): Promise<void> => {
+  try {
+    await fetch(`${API_URL}/notes/${id}`, {
+      method: "DELETE",
+    });
+  } catch (error) {
+    console.error("删除笔记失败:", error);
+  }
 };
