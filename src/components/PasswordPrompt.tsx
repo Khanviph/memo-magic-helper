@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -12,11 +12,19 @@ interface PasswordPromptProps {
 export const PasswordPrompt = ({ onAuthenticated }: PasswordPromptProps) => {
   const [password, setPasswordInput] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [isSettingPassword, setIsSettingPassword] = useState(!isPasswordSet());
+  const [isSettingPassword, setIsSettingPassword] = useState(true);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const checkPassword = async () => {
+      const hasPassword = await isPasswordSet();
+      setIsSettingPassword(!hasPassword);
+    };
+    checkPassword();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (isSettingPassword) {
@@ -27,7 +35,7 @@ export const PasswordPrompt = ({ onAuthenticated }: PasswordPromptProps) => {
         });
         return;
       }
-      setPassword(password);
+      await setPassword(password);
       toast({
         description: "密码设置成功",
       });
@@ -40,7 +48,8 @@ export const PasswordPrompt = ({ onAuthenticated }: PasswordPromptProps) => {
         });
         return;
       }
-      if (changePassword(password, newPassword)) {
+      const success = await changePassword(password, newPassword);
+      if (success) {
         toast({
           description: "密码修改成功",
         });
@@ -53,7 +62,8 @@ export const PasswordPrompt = ({ onAuthenticated }: PasswordPromptProps) => {
         });
       }
     } else {
-      if (verifyPassword(password)) {
+      const isValid = await verifyPassword(password);
+      if (isValid) {
         onAuthenticated();
       } else {
         toast({
