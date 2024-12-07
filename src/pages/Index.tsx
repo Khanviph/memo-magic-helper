@@ -6,6 +6,15 @@ import { getNotes, saveNote, deleteNote } from "../services/noteService";
 import { useToast } from "@/components/ui/use-toast";
 import { PasswordPrompt } from "../components/PasswordPrompt";
 
+// 生成唯一ID的辅助函数
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 const Index = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
@@ -25,7 +34,7 @@ const Index = () => {
 
   const handleNewNote = () => {
     const newNote: Note = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       title: "",
       content: "",
       createdAt: new Date().toISOString(),
